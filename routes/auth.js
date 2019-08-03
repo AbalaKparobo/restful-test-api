@@ -1,5 +1,7 @@
 const express = require('express');
 
+const { isAuth } = require('../middewares/is-auth');
+
 const router = express.Router();
 
 const userContoller = require('../controllers/user');
@@ -8,7 +10,7 @@ router.post('/admin/signup', userContoller.adminSignup)
 
 router.post('/admin/login', userContoller.adminLogin);
 
-router.post('/user/register', userContoller.userSignup);
+router.post('/user/register', isAuth, userContoller.userSignup);
 
 router.post('/user/login', userContoller.userLogin);
 

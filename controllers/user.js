@@ -26,9 +26,8 @@ exports.adminSignup = (req, res, next)=> {
           res.status(201).json({message: 'New Admin created successfully', userid: result.dataValues.id})
           })
           .catch(err => {
-            console.log(err);
-          //     if(!err.statusCode) { err.statusCode = 500; }
-            //     next(err)
+              if(!err.statusCode) { err.statusCode = 500; }
+                next(err)
       });
     });
 }
@@ -49,30 +48,29 @@ exports.adminLogin =(req, res, next) => {
   })
     .then(result => {
       if(!result) {
-        console.log('No User Found');
-        // Write a proper error handler
-        return
+        const error = new Error('Invalid Login Details');
+        error.statusCode = 401
+        throw error;
       }
       user = result.dataValues;
       return bcrypt.compare(password, user.password); 
     })
     .then(isSame => {
       if(!isSame) {
-        console.log('Wrong password')
-        // Write a proper error handler and throw error
-        return
+        const error = new Error('Invalid Login Details');
+        error.statusCode = 401
+        throw error;
       }
-      const token = jwt.sign({email: user.email, id: user.id}, process.env.jwt_secret, {expiresIn: '1h'});
+      const token = jwt.sign({userEmail: user.email, userId: user.id}, process.env.jwt_secret, {expiresIn: '1h'});
       res.status(200).json({token: token, username: user.username, email: user.email})
     })
     .catch(err => {
-      console.log(err);
-      // Write a proper error handler
+      if(!err.statusCode) {err.statusCode = 500};
+      next(err);
     })
 }
 
 exports.userSignup = (req, res, next) => {
-  console.log(req.body);
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
   const middlename = req.body.middlename;
@@ -98,9 +96,8 @@ exports.userSignup = (req, res, next) => {
           console.log(result.dataValues)
       })
       .catch(err => {
-        console.log(err);
-      //     if(!err.statusCode) { err.statusCode = 500; }
-        //     next(err)
+        if(!err.statusCode) { err.statusCode = 500; }
+          next(err);
   });
 });
 }
@@ -121,28 +118,28 @@ exports.userLogin =(req, res, next) => {
   })
     .then(result => {
       if(!result) {
-        console.log('No User Found');
-        // Write a proper error handler
-        return
+        const error = new Error('Invalid Login Details');
+        error.statusCode = 401
+        throw error;
       }
       user = result.dataValues;
       return bcrypt.compare(password, user.password); 
     })
     .then(isSame => {
       if(!isSame) {
-        console.log('Wrong password')
-        // Write a proper error handler and throw error
-        return
+        const error = new Error('Invalid Login Details');
+        error.statusCode = 401
+        throw error;
       }
       // let passedUser = { ... user }
       const token = jwt.sign({
-        email: user.email, 
-        id: user.id,
+        userEmail: user.email, 
+        UserId: user.id,
       }, process.env.jwt_secret,{expiresIn: '1h'});
-      res.status(200).json({token: token, userId: user.id, firstname: user.firstname, email: user.email})
+      res.status(200).json({token: token, userId: user.id, firstname: user.firstname, lastname: user.lastname, middlename: user.middlename, email: user.email})
     })
     .catch(err => {
-      console.log(err);
-      // Write a proper error handler
+      if(!err.statusCode) { err.statusCode = 500 };
+      next(err);
     })
 }
